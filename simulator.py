@@ -15,7 +15,7 @@ print(f"SLURM_JOB_CPUS_PER_NODE: {os.environ.get('SLURM_JOB_CPUS_PER_NODE')}")
 print(str(startTime),'Commence code')
 
 #save file location
-loc = "scratch/test/"
+loc = "/home/dal993192/scratch/test/"
 
 Jx = -1.0
 Jy = -1.0
@@ -26,7 +26,7 @@ hZ = 0.0
 alpha = 1.5
 
 # Simulation parameters
-N = 2500
+N = 1000
 samples = 64 #samples per batch
 batches = 100  #int(total_samples / samples)
 total_samples = samples * batches
@@ -123,10 +123,7 @@ for bb in range(0,batches):
     CorrYZ_mean_batch += [CorrYZ_av] 
 
 
-CorrZ_mean = np.mean(CorrZ_mean_batch,0)
-CorrX_mean = np.mean(CorrX_mean_batch,0)
-CorrY_mean = np.mean(CorrY_mean_batch,0)
-CorrYZ_mean = np.mean(CorrYZ_mean_batch,0)
+# Calculate averages and std over batches
 
 Sx_mean = np.mean(Sx_mean_batch,0)
 Sy_mean = np.mean(Sy_mean_batch,0)
@@ -135,6 +132,16 @@ Sz_mean = np.mean(Sz_mean_batch,0)
 Sx_std = np.std(Sx_mean_batch,0)
 Sy_std = np.std(Sy_mean_batch,0)
 Sz_std = np.std(Sz_mean_batch,0)
+
+CorrZ_mean = np.mean(CorrZ_mean_batch,0)
+CorrX_mean = np.mean(CorrX_mean_batch,0)
+CorrY_mean = np.mean(CorrY_mean_batch,0)
+CorrYZ_mean = np.mean(CorrYZ_mean_batch,0)
+
+CorrZ_std = np.std(CorrZ_mean_batch,0)
+CorrX_std = np.std(CorrX_mean_batch,0)
+CorrY_std = np.std(CorrY_mean_batch,0)
+CorrYZ_std = np.std(CorrYZ_mean_batch,0)
 
 endTime = datetime.now()
 print(str(endTime - startTime),'Run time')
@@ -162,9 +169,17 @@ for tt in range(0,np.size(timevec)):
 np.save(loc + r"N="+str(N) + r"_samples=" +str(total_samples) + r"_dt="+str(dt)+ r"_Jz="+str(Jz)+"_Sy.npy",Sy_mean)
 np.save(loc + r"N="+str(N) + r"_samples=" +str(total_samples) + r"_dt="+str(dt)+ r"_Jz="+str(Jz)+"_Sx.npy",Sx_mean)
 np.save(loc + r"N="+str(N) + r"_samples=" +str(total_samples) + r"_dt="+str(dt)+ r"_Jz="+str(Jz)+"_Sz.npy",Sz_mean)
+np.save(loc + r"N="+str(N) + r"_samples=" +str(total_samples) + r"_dt="+str(dt)+ r"_Jz="+str(Jz)+"_Sy_std.npy",Sy_std)
+np.save(loc + r"N="+str(N) + r"_samples=" +str(total_samples) + r"_dt="+str(dt)+ r"_Jz="+str(Jz)+"_Sx_std.npy",Sx_std)
+np.save(loc + r"N="+str(N) + r"_samples=" +str(total_samples) + r"_dt="+str(dt)+ r"_Jz="+str(Jz)+"_Sz_std.npy",Sz_std)
 np.save(loc + r"N="+str(N) + r"_samples=" +str(total_samples) + r"_dt="+str(dt)+ r"_Jz="+str(Jz)+"_SySz.npy",np.sum(np.sum(CorrYZ_mean,0),0))
 np.save(loc + r"N="+str(N) + r"_samples=" +str(total_samples) + r"_dt="+str(dt)+ r"_Jz="+str(Jz)+"_SySy.npy",np.sum(np.sum(CorrY_mean,0),0))
 np.save(loc + r"N="+str(N) + r"_samples=" +str(total_samples) + r"_dt="+str(dt)+ r"_Jz="+str(Jz)+"_SxSx.npy",np.sum(np.sum(CorrX_mean,0),0))
+np.save(loc + r"N="+str(N) + r"_samples=" +str(total_samples) + r"_dt="+str(dt)+ r"_Jz="+str(Jz)+"_SzSz.npy",np.sum(np.sum(CorrZ_mean,0),0))
+np.save(loc + r"N="+str(N) + r"_samples=" +str(total_samples) + r"_dt="+str(dt)+ r"_Jz="+str(Jz)+"_SySz_std.npy",np.sum(np.sum(CorrYZ_std,0),0))
+np.save(loc + r"N="+str(N) + r"_samples=" +str(total_samples) + r"_dt="+str(dt)+ r"_Jz="+str(Jz)+"_SySy_std.npy",np.sum(np.sum(CorrY_std,0),0))
+np.save(loc + r"N="+str(N) + r"_samples=" +str(total_samples) + r"_dt="+str(dt)+ r"_Jz="+str(Jz)+"_SxSx_std.npy",np.sum(np.sum(CorrX_std,0),0))
+np.save(loc + r"N="+str(N) + r"_samples=" +str(total_samples) + r"_dt="+str(dt)+ r"_Jz="+str(Jz)+"_SzSz_std.npy",np.sum(np.sum(CorrZ_std,0),0))
 np.save(loc + r"N="+str(N) + r"_samples=" +str(total_samples) + r"_dt="+str(dt)+ r"_Jz="+str(Jz)+"_timevec.npy",timevec)
 np.save(loc + r"N="+str(N) + r"_samples=" +str(total_samples) + r"_dt="+str(dt)+ r"_Jz="+str(Jz)+"_Vmin.npy",Vmin_mean)
 np.save(loc + r"N="+str(N) + r"_samples=" +str(total_samples) + r"_dt="+str(dt)+ r"_Jz="+str(Jz)+"_Vmin_std.npy",Vmin_std)

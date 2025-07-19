@@ -14,6 +14,7 @@ print(f"SLURM_JOB_CPUS_PER_NODE: {os.environ.get('SLURM_JOB_CPUS_PER_NODE')}")
 
 print(str(startTime),'Commence code')
 
+#save file location
 loc = "scratch/test/"
 
 Jx = -1.0

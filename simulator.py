@@ -25,7 +25,7 @@ hZ = 0.0
 alpha = 1.5
 
 # Simulation parameters
-N = 500
+N = 2500
 samples = 64 #samples per batch
 batches = 100  #int(total_samples / samples)
 total_samples = samples * batches
@@ -108,7 +108,7 @@ for bb in range(0,batches):
         CorrYZ_av += 1.0 / samples * np.einsum('nt,mt->nmt', Sy_samples[ss], Sz_samples[ss])
 
 
-    # Add to batch lists:q
+    # Add to batch lists
     Sx_mean_batch += [Sx_av]
     Sy_mean_batch += [Sy_av]
     Sz_mean_batch += [Sz_av]

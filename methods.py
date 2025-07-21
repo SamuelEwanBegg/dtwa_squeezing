@@ -81,10 +81,6 @@ def integration_schemes(S_init_ss, timevec, N, Jx_mat, Jy_mat, Jz_mat, hX_mat, h
     y_init[0:N] = S_init_ss[:,0]
     y_init[N:(2*N)]  = S_init_ss[:,1]
     y_init[(2*N):(3*N)] = S_init_ss[:,2]
-
-    #y[0:(N)] = Sx[:,tt]
-    #y[N:(2*N)] = Sy[:,tt]
-    #y[(2*N):(3*N)] = Sz[:,tt]
     
     def func(t, y):
         
@@ -99,7 +95,6 @@ def integration_schemes(S_init_ss, timevec, N, Jx_mat, Jy_mat, Jz_mat, hX_mat, h
         return dy
 
     #y = scipy.integrate.odeint(func, y_init, timevec) # func(y,t) order needed, and need transpose below and y = sol
-    #sol = scipy.integrate.solve_ivp(func, [0, timevec[-1]], y_init, method = 'DOP853', t_eval = timevec, )
     sol = scipy.integrate.solve_ivp(func, [0, timevec[-1]], y_init, method = 'RK45', t_eval = timevec, rtol = 1e-6, atol = 1e-9)
 
     y = sol.y
@@ -107,11 +102,7 @@ def integration_schemes(S_init_ss, timevec, N, Jx_mat, Jy_mat, Jz_mat, hX_mat, h
     Sx = y[0:N,:]
     Sy = y[N:(2*N),:]
     Sz = y[(2*N):(3*N),:]
-
-    # Sx = Sx.transpose()
-    # Sy = Sy.transpose()
-    # Sz = Sz.transpose()
-    
+ 
     return Sx, Sy, Sz
 
 

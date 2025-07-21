@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import methods 
 import numpy.random as rand
-from joblib import Parallel, delayed
+from joblib import Parallel, delayed, dump, load
 import copy
 import scipy.integrate
 from datetime import datetime
@@ -35,6 +35,12 @@ dt = 0.005 # save times
 num_cores = -1
 plot_ED = "False"
 
+print("N",N,"total_samples",total_samples,"batches",batches,"Jx,Jy,Jz",Jx,Jy,Jz,"alpha", alpha, "dt", dt, "timesteps", timesteps)
+
+# Construct a unique ID based on simulation parameters
+param_id = f"N{N}_alpha{alpha:.2f}_Jx{Jx:.2f}_Jy{Jy:.2f}_Jz{Jz:.2f}_hX{hX:.2f}_hY{hY:.2f}_hZ{hZ:.2f}_total_samples{total_samples}"
+print(param_id)
+
 # Generate interaction matrices
 Jx_mat = Jx * methods.gen_matrices(N, alpha)
 Jy_mat = Jy * methods.gen_matrices(N, alpha)
@@ -43,9 +49,36 @@ hX_mat = hX * np.ones(N)
 hY_mat = hY * np.ones(N)
 hZ_mat = hZ * np.ones(N)
 
+# File paths with unique suffix
+Jx_path = f"pkl_store/Jx_mat_{param_id}.pkl"
+Jy_path = f"pkl_store/Jy_mat_{param_id}.pkl"
+Jz_path = f"pkl_store/Jz_mat_{param_id}.pkl"
+hX_path = f"pkl_store/hX_mat_{param_id}.pkl"
+hY_path = f"pkl_store/hY_mat_{param_id}.pkl"
+hZ_path = f"pkl_store/hZ_mat_{param_id}.pkl"
+
+# Save only if they don't already exist
+def maybe_dump(obj, filename):
+    if not os.path.exists(filename):
+        dump(obj, filename)
+
+maybe_dump(Jx_mat, Jx_path)
+maybe_dump(Jy_mat, Jy_path)
+maybe_dump(Jz_mat, Jz_path)
+maybe_dump(hX_mat, hX_path)
+maybe_dump(hY_mat, hY_path)
+maybe_dump(hZ_mat, hZ_path)
+
+# Load using mmap_mode for shared access
+Jx_mat = load(Jx_path, mmap_mode='r')
+Jy_mat = load(Jy_path, mmap_mode='r')
+Jz_mat = load(Jz_path, mmap_mode='r')
+hX_mat = load(hX_path, mmap_mode='r')
+hY_mat = load(hY_path, mmap_mode='r')
+hZ_mat = load(hZ_path, mmap_mode='r')
+
 # define for later use
 timevec = dt * np.arange(0,timesteps+1)
-
 
 # Classical position of spin 
 S_init = np.zeros([N,3])

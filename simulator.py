@@ -15,7 +15,8 @@ print(f"SLURM_JOB_CPUS_PER_NODE: {os.environ.get('SLURM_JOB_CPUS_PER_NODE')}")
 print(str(startTime),'Commence code')
 
 #save file location
-loc = "/home/dal993192/scratch/test/"
+loc = "/home/dal993192/dtwa_squeezing/results/"
+temp_save_loc = "/home/dal993192/scratch/test/"
 
 Jx = -1.0
 Jy = -1.0
@@ -30,8 +31,8 @@ N = 1000
 samples = 64 #samples per batch
 batches = 100  #int(total_samples / samples)
 total_samples = samples * batches
-timesteps = 200
-dt = 0.005 # save times 
+timesteps = 100
+dt = 0.01 # save times 
 num_cores = -1
 plot_ED = "False"
 
@@ -108,47 +109,37 @@ for bb in range(0,batches):
 
     print(bb)
 
-    Sx_samples = []
-    Sy_samples = []
-    Sz_samples = []
+    Parallel(n_jobs=num_cores)(delayed(methods.dtwa_sc)(S_init, bb, ss, samples, timevec, N, Jx_mat, Jy_mat, Jz_mat, hX_mat, hY_mat, hZ_mat, temp_save_loc) for ss in range(0,samples)) 
 
-    output = Parallel(n_jobs=num_cores)(delayed(methods.dtwa)(S_init, bb, ss, samples, timevec, N, Jx_mat, Jy_mat, Jz_mat, hX_mat, hY_mat, hZ_mat) for ss in range(0,samples)) 
+    # initialize matrices 
+    Sx_av =  np.zeros([N,timesteps+1])
+    Sy_av =  np.zeros([N,timesteps+1])
+    Sz_av =  np.zeros([N,timesteps+1])
 
-    for ss in range(0,samples):
-        Sx_samples = Sx_samples + [output[ss][0][:,:]]
-        Sy_samples = Sy_samples + [output[ss][1][:,:]]
-        Sz_samples = Sz_samples + [output[ss][2][:,:]]
+    CorrZ_av =  np.zeros([N,N,timesteps+1])
+    CorrX_av =  np.zeros([N,N,timesteps+1])
+    CorrY_av =  np.zeros([N,N,timesteps+1]) 
+    CorrYZ_av = np.zeros([N,N,timesteps+1])
 
-    # Magnetization
-    Sx_av = np.mean(Sx_samples,0)
-    Sy_av = np.mean(Sy_samples,0)
-    Sz_av= np.mean(Sz_samples,0)
-
-    Sx_fluct = np.std(Sx_samples,0)
-    Sy_fluct = np.std(Sy_samples,0) 
-    Sz_fluct = np.std(Sz_samples,0)
-
-    # Correlations matrix is too big, so perform running sum.
-    CorrZ_av = np.zeros([np.size(Sz_samples,1),np.size(Sz_samples,1),np.size(Sz_samples,2)])
-    CorrX_av = np.zeros([np.size(Sz_samples,1),np.size(Sz_samples,1),np.size(Sz_samples,2)])
-    CorrY_av = np.zeros([np.size(Sz_samples,1),np.size(Sz_samples,1),np.size(Sz_samples,2)])
-    CorrYZ_av = np.zeros([np.size(Sz_samples,1),np.size(Sz_samples,1),np.size(Sz_samples,2)])
 
     for ss in range(0,samples):
-        
-        CorrZ_av  += 1.0 / samples * np.einsum('nt,mt->nmt', Sz_samples[ss], Sz_samples[ss])
-        CorrX_av  += 1.0 / samples * np.einsum('nt,mt->nmt', Sx_samples[ss], Sx_samples[ss])
-        CorrY_av  += 1.0 / samples * np.einsum('nt,mt->nmt', Sy_samples[ss], Sy_samples[ss])
-        CorrYZ_av += 1.0 / samples * np.einsum('nt,mt->nmt', Sy_samples[ss], Sz_samples[ss])
+        sx_sample = np.load(save_loc + "Sx_sample_" + str(ss) + ".npy")
+        sy_sample = np.load(save_loc + "Sy_sample_" + str(ss) + ".npy")
+        sz_sample = np.load(save_loc + "Sz_sample_" + str(ss) + ".npy")
 
+        Sx_av += 1.0/ samples * sx_sample
+        Sy_av += 1.0/ samples * sy_sample
+        Sz_av += 1.0/ samples * sz_sample
+
+        CorrZ_av  += 1.0 / samples * np.einsum('nt,mt->nmt', sz_sample, sz_sample)
+        CorrX_av  += 1.0 / samples * np.einsum('nt,mt->nmt', sx_sample, sx_sample)
+        CorrY_av  += 1.0 / samples * np.einsum('nt,mt->nmt', sy_sample, sy_sample)
+        CorrYZ_av += 1.0 / samples * np.einsum('nt,mt->nmt', sy_sample, sz_sample)
 
     # Add to batch lists
     Sx_mean_batch += [Sx_av]
     Sy_mean_batch += [Sy_av]
     Sz_mean_batch += [Sz_av]
-    Sx_std_batch += [Sx_fluct]
-    Sy_std_batch += [Sy_fluct]
-    Sz_std_batch += [Sz_fluct]
 
     CorrZ_mean_batch +=  [CorrZ_av] 
     CorrX_mean_batch += [CorrX_av] 

@@ -151,7 +151,7 @@ def dtwa(S_init, bb, ss, samples, timevec, N, Jx_mat, Jy_mat, Jz_mat, hX_mat, hY
 
 
 
-def dtwa_sc(S_init, bb, ss, samples, timevec, N, Jx_mat, Jy_mat, Jz_mat, hX_mat, hY_mat, hZ_mat, save_loc):
+def dtwa_sc(S_init, bb, ss, samples, timevec, N, Jx_mat, Jy_mat, Jz_mat, hX_mat, hY_mat, hZ_mat, save_loc, rtol, atol):
 
     np.random.seed(bb * samples + ss)   
     
@@ -187,10 +187,10 @@ def dtwa_sc(S_init, bb, ss, samples, timevec, N, Jx_mat, Jy_mat, Jz_mat, hX_mat,
         S_sample_init[:,2] = S_init[:,2] * np.ones([N])
 
 
-    integration_schemes_sc(S_sample_init, timevec, N, Jx_mat, Jy_mat, Jz_mat, hX_mat, hY_mat, hZ_mat, save_loc, ss)
+    integration_schemes_sc(S_sample_init, timevec, N, Jx_mat, Jy_mat, Jz_mat, hX_mat, hY_mat, hZ_mat, save_loc, ss,rtol, atol)
    
     
-def integration_schemes_sc(S_init_ss, timevec, N, Jx_mat, Jy_mat, Jz_mat, hX_mat, hY_mat, hZ_mat,save_loc,ss):
+def integration_schemes_sc(S_init_ss, timevec, N, Jx_mat, Jy_mat, Jz_mat, hX_mat, hY_mat, hZ_mat,save_loc,ss,rtol, atol):
 
     y_init = np.zeros([3 * N])
     y_init[0:N] = S_init_ss[:,0]
@@ -210,7 +210,7 @@ def integration_schemes_sc(S_init_ss, timevec, N, Jx_mat, Jy_mat, Jz_mat, hX_mat
         return dy
 
     #y = scipy.integrate.odeint(func, y_init, timevec) # func(y,t) order needed, and need transpose below and y = sol
-    sol = scipy.integrate.solve_ivp(func, [0, timevec[-1]], y_init, method = 'RK45', t_eval = timevec, rtol = 1e-6, atol = 1e-9)
+    sol = scipy.integrate.solve_ivp(func, [0, timevec[-1]], y_init, method = 'RK45', t_eval = timevec, rtol = rtol, atol = atol)
 
     y = sol.y
 

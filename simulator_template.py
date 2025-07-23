@@ -15,24 +15,26 @@ print(f"SLURM_JOB_CPUS_PER_NODE: {os.environ.get('SLURM_JOB_CPUS_PER_NODE')}")
 print(str(startTime),'Commence code')
 
 #save file location
-loc = "/home/dal993192/dtwa_squeezing/results/"
-temp_save_loc = "/home/dal993192/scratch/test/"
+loc = "/home/dal993192/dtwa_squeezing/results/results2/YY/"
+temp_save_loc = "/home/dal993192/scratch/results2/YY/"
 
 Jx = -1.0
 Jy = -1.0
-Jz = 3.8
+Jz = 0.8
 hX = 0.0
 hY = 0.0
 hZ = 0.0
 alpha = 1.5
 
 # Simulation parameters
-N = 2500
+N = XX
 samples = 640 #samples per batch
 batches = 10  #int(total_samples / samples)
 total_samples = samples * batches
 timesteps = 100
 dt = 0.01 # save times 
+rtol = 10**(-7)
+atol = 10**(-10)
 num_cores = -1
 plot_ED = "False"
 
@@ -111,7 +113,7 @@ for bb in range(0,batches):
 
     print(bb)
 
-    Parallel(n_jobs=num_cores)(delayed(methods.dtwa_sc)(S_init, bb, ss, samples, timevec, N, Jx_mat, Jy_mat, Jz_mat, hX_mat, hY_mat, hZ_mat, temp_save_loc) for ss in range(0,samples)) 
+    Parallel(n_jobs=num_cores)(delayed(methods.dtwa_sc)(S_init, bb, ss, samples, timevec, N, Jx_mat, Jy_mat, Jz_mat, hX_mat, hY_mat, hZ_mat, temp_save_loc, rtol, atol) for ss in range(0,samples)) 
 
     # initialize matrices 
     Sx_av =  np.zeros([N,timesteps+1])
@@ -132,14 +134,13 @@ for bb in range(0,batches):
 
         Sx_av += 1.0/ samples * sx_sample
         Sy_av += 1.0/ samples * sy_sample
-        Sx_av += 1.0/ samples * sx_sample
+        Sz_av += 1.0/ samples * sz_sample
         Mxy_av += 1.0/ samples * np.sqrt(np.sum(sx_sample,0)**2 + np.sum(sy_sample,0)**2)
 
         CorrZ_av  += 1.0 / samples * np.einsum('nt,mt->nmt', sz_sample, sz_sample)
         CorrX_av  += 1.0 / samples * np.einsum('nt,mt->nmt', sx_sample, sx_sample)
         CorrY_av  += 1.0 / samples * np.einsum('nt,mt->nmt', sy_sample, sy_sample)
         CorrYZ_av += 1.0 / samples * np.einsum('nt,mt->nmt', sy_sample, sz_sample)
-
 
     # Add to batch lists
     Sx_mean_batch += [Sx_av]
@@ -179,7 +180,7 @@ endTime = datetime.now()
 print(str(endTime - startTime),'Run time')
 
 # Arbitrary angle correlator/variance
-maxNu = 100
+maxNu = 1000
 
 Vmin_mean = np.zeros(np.size(timevec))
 Vmin_std = np.zeros(np.size(timevec))

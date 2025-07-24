@@ -15,12 +15,12 @@ print(f"SLURM_JOB_CPUS_PER_NODE: {os.environ.get('SLURM_JOB_CPUS_PER_NODE')}")
 print(str(startTime),'Commence code')
 
 #save file location
-loc = "/home/dal993192/dtwa_squeezing/results/results2/YY/"
-temp_save_loc = "/home/dal993192/scratch/results2/YY/"
+loc = "/home/dal993192/dtwa_squeezing/results/LOCATION/YY/"
+temp_save_loc = "/home/dal993192/scratch/LOCATION/YY/"
 
 Jx = -1.0
 Jy = -1.0
-Jz = 0.8
+Jz = 3.8
 hX = 0.0
 hY = 0.0
 hZ = 0.0
@@ -29,9 +29,9 @@ alpha = 1.5
 # Simulation parameters
 N = XX
 samples = 640 #samples per batch
-batches = 10  #int(total_samples / samples)
+batches = 10   #int(total_samples / samples)
 total_samples = samples * batches
-timesteps = 100
+timesteps = 65
 dt = 0.01 # save times 
 rtol = 10**(-7)
 atol = 10**(-10)
@@ -45,20 +45,20 @@ param_id = f"N{N}_alpha{alpha:.2f}_Jx{Jx:.2f}_Jy{Jy:.2f}_Jz{Jz:.2f}_hX{hX:.2f}_h
 print(param_id)
 
 # Generate interaction matrices
-Jx_mat = Jx * methods.gen_matrices(N, alpha)
-Jy_mat = Jy * methods.gen_matrices(N, alpha)
-Jz_mat = Jz * methods.gen_matrices(N, alpha)
+Jx_mat = Jx * methods.gen_matrices_pbc(N, alpha)
+Jy_mat = Jy * methods.gen_matrices_pbc(N, alpha)
+Jz_mat = Jz * methods.gen_matrices_pbc(N, alpha)
 hX_mat = hX * np.ones(N)
 hY_mat = hY * np.ones(N)
 hZ_mat = hZ * np.ones(N)
 
 # File paths with unique suffix
-Jx_path = f"pkl_store/Jx_mat_{param_id}.pkl"
-Jy_path = f"pkl_store/Jy_mat_{param_id}.pkl"
-Jz_path = f"pkl_store/Jz_mat_{param_id}.pkl"
-hX_path = f"pkl_store/hX_mat_{param_id}.pkl"
-hY_path = f"pkl_store/hY_mat_{param_id}.pkl"
-hZ_path = f"pkl_store/hZ_mat_{param_id}.pkl"
+Jx_path = f"{temp_save_loc}/pkl_store/Jx_mat_{param_id}.pkl"
+Jy_path = f"{temp_save_loc}/pkl_store/Jy_mat_{param_id}.pkl"
+Jz_path = f"{temp_save_loc}/pkl_store/Jz_mat_{param_id}.pkl"
+hX_path = f"{temp_save_loc}/pkl_store/hX_mat_{param_id}.pkl"
+hY_path = f"{temp_save_loc}/pkl_store/hY_mat_{param_id}.pkl"
+hZ_path = f"{temp_save_loc}/pkl_store/hZ_mat_{param_id}.pkl"
 
 # Save only if they don't already exist
 def maybe_dump(obj, filename):
@@ -180,7 +180,7 @@ endTime = datetime.now()
 print(str(endTime - startTime),'Run time')
 
 # Arbitrary angle correlator/variance
-maxNu = 1000
+maxNu = 10000
 
 Vmin_mean = np.zeros(np.size(timevec))
 Vmin_std = np.zeros(np.size(timevec))

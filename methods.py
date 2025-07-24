@@ -3,7 +3,7 @@ import numpy.random as rand
 import copy
 import scipy.integrate
 
-def gen_matrices(N, alpha):
+def gen_matrices_obc(N, alpha):
 
     M = np.zeros([N,N])
 
@@ -16,6 +16,101 @@ def gen_matrices(N, alpha):
                 M[kk,hh] = np.abs(kk - hh)**(-alpha)
 
     return M
+
+
+def gen_matrices_pbc(N, alpha):
+
+    M = np.zeros([N,N])
+
+    for kk in range(0,N):
+        
+        for hh in range(0,N):
+        
+            if hh != kk:
+            
+                if abs(kk-hh) > int(N/2):
+
+                    M[kk,hh] = np.abs(N-np.abs(kk - hh))**(-alpha)
+
+                else:
+
+                    M[kk,hh] = np.abs(kk - hh)**(-alpha)
+
+    return M
+
+def gen_matrices_2D_obc(N, alpha):
+
+    L = int(np.sqrt(N))
+
+
+    M = np.zeros([N,N])
+
+    for kk_x in range(0,L):
+
+        for kk_y in range(0,L):
+
+            # index of spin ii (kx'th row, ky'th column)
+            ii =  kk_x * L + kk_y 
+
+            for hh_x in range(0,L):
+
+                for hh_y in range(0,L):
+
+                    jj =  hh_x * L + hh_y 
+
+                    if ii != jj:
+
+                        M[ii,jj] = np.sqrt((kk_x - hh_x)**2 + (kk_y - hh_y)**2)**(-alpha)
+
+    return M
+
+
+def gen_matrices_2D_pbc(N, alpha):
+
+    L = int(np.sqrt(N))
+
+
+    M = np.zeros([N,N])
+
+    for kk_x in range(0,L):
+
+        for kk_y in range(0,L):
+
+            # index of spin ii (kx'th row, ky'th column)
+            ii =  kk_x * L + kk_y 
+
+            for hh_x in range(0,L):
+
+                for hh_y in range(0,L):
+
+                    jj =  hh_x * L + hh_y 
+
+                    if ii != jj:
+                        
+                         
+                        if abs(kk_x-hh_x) > int(L/2):
+ 
+                            xshift = L - abs(kk_x-hh_x)
+
+                        else:
+
+                            xshift = abs(kk_x-hh_x)
+
+
+                        if abs(kk_y-hh_y) > int(L/2):
+ 
+                            yshift = L - abs(kk_y-hh_y)
+
+                        else:
+
+                            yshift = abs(kk_y-hh_y)
+
+
+                        M[ii,jj] = np.sqrt((xshift)**2 + (yshift)**2)**(-alpha)
+
+    return M
+
+
 
 
 

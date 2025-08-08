@@ -477,5 +477,5 @@ def poisson_filter(lambda0, xMax, yMax, lower_threshold, upper_threshold):
         plt.grid()
         plt.show()
 
-    return J_new, distances_new
+    return J_new, distances_new, distances, xx_new, yy_new, xx, yy
 

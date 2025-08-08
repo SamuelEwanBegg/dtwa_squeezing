@@ -15,34 +15,36 @@ print(f"SLURM_JOB_CPUS_PER_NODE: {os.environ.get('SLURM_JOB_CPUS_PER_NODE')}")
 print(str(startTime),'Commence code')
 
 #save file location
-loc = "/home/dal993192/dtwa_squeezing/results/LOCATION/YY/"
-temp_save_loc = "/home/dal993192/scratch/LOCATION/YY/"
+loc = "/home/dal993192/dtwa_squeezing/results/LOCATION/YY/runVV/"
+temp_save_loc = "/home/dal993192/scratch/LOCATION/YY/runVV/"
 
 Jx = -1.0
 Jy = -1.0
-Jz = 3.8
+Jz = 1.0
 hX = 0.0
 hY = 0.0
 hZ = 0.0
-alpha = 1.5
+alpha = 3.0
 
 # Simulation parameters
 samples = 640 #samples per batch
 batches = 10   #int(total_samples / samples)
 total_samples = samples * batches
 timesteps = 65
-dt = 0.01 # save times 
+dt = 0.005 # save times 
 rtol = 10**(-7)
 atol = 10**(-10)
 num_cores = -1
 plot_ED = "False"
 
+disorder_seed = ZZ
+np.random.seed(disorder_seed)
 lower_threshold = 0.8 # Fraction of the mean reff for lower filtering
 upper_threshold = 100000  # Fraction of the mean reff for upper filtering  
-xMax = 20
-yMax = 20
+xMax = XX
+yMax = XX
 lambda0 = 1  # Intensity (mean density) of the Poisson process
-Jmat, rmat = methods.poisson_filter(lambda0, xMax, yMax, lower_threshold, upper_threshold)
+Jmat, rmat, rfull, xx_filt, yy_filt, xx_full, yy_full = methods.poisson_filter(lambda0, xMax, yMax, lower_threshold, upper_threshold)
 N = Jmat.shape[0]  # Number of spins generated
 
 # Construct a unique ID based on simulation parameters
@@ -204,22 +206,26 @@ for tt in range(0,np.size(timevec)):
     Vmin_std[tt] = Vmin_nu_std[arg]
 
 
-np.save(loc + r"N="+str(N) + r"_samples=" +str(total_samples) + r"_dt="+str(dt)+ r"_Jz="+str(Jz)+"_Sy.npy",Sy_mean)
-np.save(loc + r"N="+str(N) + r"_samples=" +str(total_samples) + r"_dt="+str(dt)+ r"_Jz="+str(Jz)+"_Sx.npy",Sx_mean)
-np.save(loc + r"N="+str(N) + r"_samples=" +str(total_samples) + r"_dt="+str(dt)+ r"_Jz="+str(Jz)+"_Sz.npy",Sz_mean)
-np.save(loc + r"N="+str(N) + r"_samples=" +str(total_samples) + r"_dt="+str(dt)+ r"_Jz="+str(Jz)+"_Mxy.npy",Mxy_mean)
-np.save(loc + r"N="+str(N) + r"_samples=" +str(total_samples) + r"_dt="+str(dt)+ r"_Jz="+str(Jz)+"_Sy_std.npy",Sy_std)
-np.save(loc + r"N="+str(N) + r"_samples=" +str(total_samples) + r"_dt="+str(dt)+ r"_Jz="+str(Jz)+"_Sx_std.npy",Sx_std)
-np.save(loc + r"N="+str(N) + r"_samples=" +str(total_samples) + r"_dt="+str(dt)+ r"_Jz="+str(Jz)+"_Sz_std.npy",Sz_std)
-np.save(loc + r"N="+str(N) + r"_samples=" +str(total_samples) + r"_dt="+str(dt)+ r"_Jz="+str(Jz)+"_Mxy_std.npy",Mxy_std)
-np.save(loc + r"N="+str(N) + r"_samples=" +str(total_samples) + r"_dt="+str(dt)+ r"_Jz="+str(Jz)+"_SySz.npy",np.sum(np.sum(CorrYZ_mean,0),0))
-np.save(loc + r"N="+str(N) + r"_samples=" +str(total_samples) + r"_dt="+str(dt)+ r"_Jz="+str(Jz)+"_SySy.npy",np.sum(np.sum(CorrY_mean,0),0))
-np.save(loc + r"N="+str(N) + r"_samples=" +str(total_samples) + r"_dt="+str(dt)+ r"_Jz="+str(Jz)+"_SxSx.npy",np.sum(np.sum(CorrX_mean,0),0))
-np.save(loc + r"N="+str(N) + r"_samples=" +str(total_samples) + r"_dt="+str(dt)+ r"_Jz="+str(Jz)+"_SzSz.npy",np.sum(np.sum(CorrZ_mean,0),0))
-np.save(loc + r"N="+str(N) + r"_samples=" +str(total_samples) + r"_dt="+str(dt)+ r"_Jz="+str(Jz)+"_SySz_std.npy",np.sum(np.sum(CorrYZ_std,0),0))
-np.save(loc + r"N="+str(N) + r"_samples=" +str(total_samples) + r"_dt="+str(dt)+ r"_Jz="+str(Jz)+"_SySy_std.npy",np.sum(np.sum(CorrY_std,0),0))
-np.save(loc + r"N="+str(N) + r"_samples=" +str(total_samples) + r"_dt="+str(dt)+ r"_Jz="+str(Jz)+"_SxSx_std.npy",np.sum(np.sum(CorrX_std,0),0))
-np.save(loc + r"N="+str(N) + r"_samples=" +str(total_samples) + r"_dt="+str(dt)+ r"_Jz="+str(Jz)+"_SzSz_std.npy",np.sum(np.sum(CorrZ_std,0),0))
-np.save(loc + r"N="+str(N) + r"_samples=" +str(total_samples) + r"_dt="+str(dt)+ r"_Jz="+str(Jz)+"_timevec.npy",timevec)
-np.save(loc + r"N="+str(N) + r"_samples=" +str(total_samples) + r"_dt="+str(dt)+ r"_Jz="+str(Jz)+"_Vmin.npy",Vmin_mean)
-np.save(loc + r"N="+str(N) + r"_samples=" +str(total_samples) + r"_dt="+str(dt)+ r"_Jz="+str(Jz)+"_Vmin_std.npy",Vmin_std)
+np.save(loc + "posmat.npy",[xx_filt,yy_filt])
+np.save(loc + "rmat.npy",rmat)
+np.save(loc + "posfull.npy",[xx_full,yy_full])
+np.save(loc + "rfull.npy",rfull)
+np.save(loc + "Sy.npy",Sy_mean)
+np.save(loc + "Sx.npy",Sx_mean)
+np.save(loc + "Sz.npy",Sz_mean)
+np.save(loc + "Sy_std.npy",Sy_std)
+np.save(loc + "Sx_std.npy",Sx_std)
+np.save(loc + "Sz_std.npy",Sz_std)
+np.save(loc + "Mxy.npy",Mxy_mean)
+np.save(loc + "Mxy_std.npy",Mxy_std)
+np.save(loc + "SySz.npy",np.sum(np.sum(CorrYZ_mean,0),0))
+np.save(loc + "SySz_std.npy",np.sum(np.sum(CorrYZ_std,0),0))
+np.save(loc + "SySy.npy",np.sum(np.sum(CorrY_mean,0),0))
+np.save(loc + "SySy_std.npy",np.sum(np.sum(CorrY_std,0),0))
+np.save(loc + "SxSx.npy",np.sum(np.sum(CorrX_mean,0),0))
+np.save(loc + "SxSx_std.npy",np.sum(np.sum(CorrX_std,0),0))
+np.save(loc + "SzSz.npy",np.sum(np.sum(CorrZ_mean,0),0))
+np.save(loc + "SzSz_std.npy",np.sum(np.sum(CorrZ_std,0),0))
+np.save(loc + "timevec.npy",timevec)
+np.save(loc + "Vmin.npy",Vmin_mean)
+np.save(loc + "Vmin_std.npy",Vmin_std)

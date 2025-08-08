@@ -20,18 +20,18 @@ temp_save_loc = "/home/dal993192/scratch/LOCATION/YY/"
 
 Jx = -1.0
 Jy = -1.0
-Jz = 3.8
+Jz = 0.0
 hX = 0.0
 hY = 0.0
 hZ = 0.0
-alpha = 1.5
+alpha = 3.0
 
 # Simulation parameters
 N = XX
 samples = 640 #samples per batch
-batches = 10   #int(total_samples / samples)
+batches = 5   #int(total_samples / samples)
 total_samples = samples * batches
-timesteps = 65
+timesteps = 400
 dt = 0.01 # save times 
 rtol = 10**(-7)
 atol = 10**(-10)
@@ -45,9 +45,9 @@ param_id = f"N{N}_alpha{alpha:.2f}_Jx{Jx:.2f}_Jy{Jy:.2f}_Jz{Jz:.2f}_hX{hX:.2f}_h
 print(param_id)
 
 # Generate interaction matrices
-Jx_mat = Jx * methods.gen_matrices_pbc(N, alpha)
-Jy_mat = Jy * methods.gen_matrices_pbc(N, alpha)
-Jz_mat = Jz * methods.gen_matrices_pbc(N, alpha)
+Jx_mat = Jx * methods.gen_matrices_2D_pbc(N, alpha)
+Jy_mat = Jy * methods.gen_matrices_2D_pbc(N, alpha)
+Jz_mat = Jz * methods.gen_matrices_2D_pbc(N, alpha)
 hX_mat = hX * np.ones(N)
 hY_mat = hY * np.ones(N)
 hZ_mat = hZ * np.ones(N)

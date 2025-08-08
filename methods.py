@@ -3,6 +3,7 @@ import numpy.random as rand
 import copy
 import scipy.integrate
 import matplotlib.pyplot as plt
+import scipy.stats
 
 def gen_matrices_obc(N, alpha):
 
@@ -112,6 +113,63 @@ def gen_matrices_2D_pbc(N, alpha):
     return M
 
 
+def gen_matrices_2D_pbc_vacancy(N, alpha, positions):
+
+    L = int(np.sqrt(N))
+
+    M = np.zeros([N,N])
+
+    xx_cord = []
+    yy_cord = []
+    rmat = []
+
+    for kk_x in range(0,L):
+
+        for kk_y in range(0,L):
+
+            # index of spin ii (kx'th row, ky'th column)
+            ii =  kk_x * L + kk_y 
+
+            for hh_x in range(0,L):
+
+                for hh_y in range(0,L):
+
+                    jj =  hh_x * L + hh_y 
+
+                    if ii != jj:
+                        
+                         
+                        if abs(kk_x-hh_x) > int(L/2):
+ 
+                            xshift = L - abs(kk_x-hh_x)
+
+                        else:
+
+                            xshift = abs(kk_x-hh_x)
+
+
+                        if abs(kk_y-hh_y) > int(L/2):
+ 
+                            yshift = L - abs(kk_y-hh_y)
+
+                        else:
+
+                            yshift = abs(kk_y-hh_y)			
+
+                        if positions[ii] == 1 and positions[jj] == 1: #only add interaction if both spins are accepted
+
+                            xx_cord += [kk_x * L + kk_y]
+                            yy_cord += [hh_x * L + hh_y]
+                            rmat += [np.sqrt((xshift)**2 + (yshift)**2)]
+
+                            M[ii,jj] = np.sqrt((xshift)**2 + (yshift)**2)**(-alpha)
+
+    # remove all rows and columns with no interactions
+    rows_to_keep = np.where(np.sum(M, axis=1) > 0)[0]
+
+    M = M[rows_to_keep][:, rows_to_keep]
+
+    return M, xx_cord, yy_cord, rmat
 
 
 

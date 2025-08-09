@@ -31,7 +31,8 @@ alpha = 0.0
 az = 2.0
 
 # Simulation parameters
-N = XX
+L = XX
+N = L**2
 samples = 640 #samples per batch
 batches = 5   #int(total_samples / samples)
 total_samples = samples * batches
@@ -85,18 +86,21 @@ hX_mat_lower = hX * np.ones(N)
 hY_mat_lower = hY * np.ones(N)
 hZ_mat_lower = hZ * np.ones(N)
 
-hX_mat = np.zeros([2*N, 2*N])
-hY_mat = np.zeros([2*N, 2*N])
-hZ_mat = np.zeros([2*N, 2*N])
+hX_mat = np.ones(2*N)
+hY_mat = np.ones(2*N)
+hZ_mat = np.ones(2*N)
 
-hX_mat[0:N, 0:N] = hX_mat_upper
-hX_mat[N:, N:] = hX_mat_lower
+hX_mat[0:N] = hX_mat_upper
+hX_mat[N:] = hX_mat_lower
 
-hY_mat[0:N, 0:N] = hY_mat_upper
-hY_mat[N:, N:] = hY_mat_lower
+hY_mat[0:N] = hY_mat_upper
+hY_mat[N:] = hY_mat_lower
 
-hZ_mat[0:N, 0:N] = hZ_mat_upper
-hZ_mat[N:, N:] = hZ_mat_lower
+hZ_mat[0:N] = hZ_mat_upper
+hZ_mat[N:] = hZ_mat_lower
+
+print('hz',np.shape(hZ_mat))
+print('Jz',np.shape(Jz_mat))
 
 # File paths with unique suffix
 Jx_path = f"{temp_save_loc}/pkl_store/Jx_mat_{param_id}.pkl"

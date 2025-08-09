@@ -360,6 +360,7 @@ def dtwa_sc(S_init, bb, ss, samples, timevec, N, Jx_mat, Jy_mat, Jz_mat, hX_mat,
     # draw random numbers for initial state if IC not aligned with axis 
     # (assumes translationally invariance) 
 
+
     if S_init[0,0] == 0.0:
 
         S_sample_init[:,0] = 2 * (random_numbers[:,0] - 0.5 * np.ones([N]))
@@ -422,6 +423,46 @@ def integration_schemes_sc(S_init_ss, timevec, N, Jx_mat, Jy_mat, Jz_mat, hX_mat
     np.save(save_loc + "Sz_sample_" + str(ss) + ".npy", Sz) 
 
 
+def dtwa_sc_bilayer(S_init, bb, ss, samples, timevec, N, Jx_mat, Jy_mat, Jz_mat, hX_mat, hY_mat, hZ_mat, save_loc, rtol, atol):
+
+    np.random.seed(bb * samples + ss)   
+    
+    random_numbers = rand.randint(0,2,[N, 3]) # generate random integers in range [0,1] for each sample and site in 3 directions (x,y,z)
+
+    S_sample_init = np.zeros([N,3])
+
+    # draw random numbers for initial state if IC not aligned with axis 
+    # (assumes translationally invariance) 
+
+
+    for jj in range(0,N):
+
+        if S_init[jj,0] == 0.0:
+
+            S_sample_init[jj,0] = 2 * (random_numbers[jj,0] - 0.5)
+
+        else:
+
+            S_sample_init[jj,0] = S_init[jj,0] 
+
+        if S_init[jj,1] == 0.0:
+
+            S_sample_init[jj,1] = 2 * (random_numbers[jj,1] - 0.5)
+
+        else:
+                
+            S_sample_init[jj,1] = S_init[jj,1]
+
+        if S_init[jj,2] == 0.0:
+
+            S_sample_init[jj,2] = 2 * (random_numbers[jj,2] - 0.5)
+
+        else:
+
+            S_sample_init[jj,2] = S_init[jj,2]
+
+
+    integration_schemes_sc(S_sample_init, timevec, N, Jx_mat, Jy_mat, Jz_mat, hX_mat, hY_mat, hZ_mat, save_loc, ss,rtol, atol)
 
 def poisson_filter(lambda0, xMax, yMax, lower_threshold, upper_threshold):
 

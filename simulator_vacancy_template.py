@@ -31,32 +31,31 @@ alpha = 3.0
 samples = 640 #samples per batch
 batches = 10   #int(total_samples / samples)
 total_samples = samples * batches
-timesteps = 65
+timesteps = 130
 dt = 0.005 # save times 
 rtol = 10**(-7)
 atol = 10**(-10)
 num_cores = -1
 plot_ED = "False"
-L = PP # square lattice length 
+L = XX # square lattice length 
 Ninit = L**2
-lambda0 = 1
+lambda0 = 2.0
 
 disorder_seed = ZZ
 np.random.seed(disorder_seed)
 
 #now draw Poisson distribution with mean of lambda to see if spin is accepted
-lattice_NVC_count = scipy.stats.poisson.rvs(lambda0, size=Ninit)	
+#lattice_NVC_count = scipy.stats.poisson.rvs(lambda0, size=Ninit)	
+lattice_NVC_count =  np.rint(np.ones(Ninit) + 0.6 * rand.normal(0,1,Ninit))	
 positions = copy.copy(lattice_NVC_count)
 positions[positions > 1] = 0 #set all non-zero values to 1
 
 # Generate interaction matrices
-Jx_mat, xx_filt, yy_filt, rmat = methods.gen_matrices_2D_pbc_vacancy(Ninit, alpha, positions)
-Jy_mat, xx_filt, yy_filt, rmat = methods.gen_matrices_2D_pbc_vacancy(Ninit, alpha, positions)
-Jz_mat, xx_filt, yy_filt, rmat = methods.gen_matrices_2D_pbc_vacancy(Ninit, alpha, positions)
+J_mat, xx_filt, yy_filt = methods.gen_matrices_2D_pbc_vacancy(Ninit, alpha, positions)
 
-Jx_mat = Jx * Jx_mat
-Jy_mat = Jy * Jy_mat
-Jz_mat = Jz * Jz_mat    
+Jx_mat = Jx * J_mat
+Jy_mat = Jy * J_mat
+Jz_mat = Jz * J_mat    
 
 N = Jx_mat.shape[0]  # Number of spins actually generated 
 
@@ -216,7 +215,7 @@ for tt in range(0,np.size(timevec)):
 
 
 np.save(loc + "posmat.npy",[xx_filt,yy_filt])
-np.save(loc + "rmat.npy",rmat)
+np.save(loc + "Jeff_mat.npy",np.sum(J_mat,1))
 np.save(loc + "Sy.npy",Sy_mean)
 np.save(loc + "Sx.npy",Sx_mean)
 np.save(loc + "Sz.npy",Sz_mean)

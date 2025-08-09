@@ -121,7 +121,6 @@ def gen_matrices_2D_pbc_vacancy(N, alpha, positions):
 
     xx_cord = []
     yy_cord = []
-    rmat = []
 
     for kk_x in range(0,L):
 
@@ -129,6 +128,11 @@ def gen_matrices_2D_pbc_vacancy(N, alpha, positions):
 
             # index of spin ii (kx'th row, ky'th column)
             ii =  kk_x * L + kk_y 
+
+            if positions[ii] == 1:
+                xx_cord += [kk_x]
+                yy_cord += [kk_y]
+
 
             for hh_x in range(0,L):
 
@@ -158,10 +162,6 @@ def gen_matrices_2D_pbc_vacancy(N, alpha, positions):
 
                         if positions[ii] == 1 and positions[jj] == 1: #only add interaction if both spins are accepted
 
-                            xx_cord += [kk_x * L + kk_y]
-                            yy_cord += [hh_x * L + hh_y]
-                            rmat += [np.sqrt((xshift)**2 + (yshift)**2)]
-
                             M[ii,jj] = np.sqrt((xshift)**2 + (yshift)**2)**(-alpha)
 
     # remove all rows and columns with no interactions
@@ -169,7 +169,8 @@ def gen_matrices_2D_pbc_vacancy(N, alpha, positions):
 
     M = M[rows_to_keep][:, rows_to_keep]
 
-    return M, xx_cord, yy_cord, rmat
+    return M, xx_cord, yy_cord
+
 
 
 

@@ -32,7 +32,7 @@ az = 2.0
 
 # Simulation parameters
 L = XX
-N = L**2
+Nval = L**2
 samples = 640 #samples per batch
 batches = 5   #int(total_samples / samples)
 total_samples = samples * batches
@@ -45,59 +45,60 @@ plot_ED = "False"
 
 
 # Construct a unique ID based on simulation parameters
-param_id = f"N{N}_alpha{alpha:.2f}_Jx_in{Jx_in:.2f}_Jy_in{Jy_in:.2f}_Jz_in{Jz_in:.2f}_Jx_out{Jx_out:.2f}_Jy_out{Jy_out:.2f}_Jz_out{Jz_out:.2f}_hX{hX:.2f}_hY{hY:.2f}_hZ{hZ:.2f}_total_samples{total_samples}"
+param_id = f"N{Nval}_alpha{alpha:.2f}_Jx_in{Jx_in:.2f}_Jy_in{Jy_in:.2f}_Jz_in{Jz_in:.2f}_Jx_out{Jx_out:.2f}_Jy_out{Jy_out:.2f}_Jz_out{Jz_out:.2f}_hX{hX:.2f}_hY{hY:.2f}_hZ{hZ:.2f}_total_samples{total_samples}"
 print(param_id)
 
 # Generate interaction matrices for in-plane interactions
-Jx_mat_in = Jx_in * methods.gen_matrices_2D_pbc(N, alpha)
-Jy_mat_in = Jy_in * methods.gen_matrices_2D_pbc(N, alpha)
-Jz_mat_in = Jz_in * methods.gen_matrices_2D_pbc(N, alpha)
+Jx_mat_in = Jx_in * methods.gen_matrices_2D_pbc(Nval, alpha)
+Jy_mat_in = Jy_in * methods.gen_matrices_2D_pbc(Nval, alpha)
+Jz_mat_in = Jz_in * methods.gen_matrices_2D_pbc(Nval, alpha)
 
 # Generate interaction matrices for out-plane interactions
-Jx_mat_out = Jx_out * methods.gen_matrices_2D_pbc_bilayer(N, alpha, az)
-Jy_mat_out = Jy_out * methods.gen_matrices_2D_pbc_bilayer(N, alpha, az)
-Jz_mat_out = Jz_out * methods.gen_matrices_2D_pbc_bilayer(N, alpha, az)
+Jx_mat_out = Jx_out * methods.gen_matrices_2D_pbc_bilayer(Nval, alpha, az)
+Jy_mat_out = Jy_out * methods.gen_matrices_2D_pbc_bilayer(Nval, alpha, az)
+Jz_mat_out = Jz_out * methods.gen_matrices_2D_pbc_bilayer(Nval, alpha, az)
 
-Jx_mat = np.zeros([2*N, 2*N])
-Jy_mat = np.zeros([2*N, 2*N])
-Jz_mat = np.zeros([2*N, 2*N])
+Jx_mat = np.zeros([2*Nval, 2*Nval])
+Jy_mat = np.zeros([2*Nval, 2*Nval])
+Jz_mat = np.zeros([2*Nval, 2*Nval])
 
-Jx_mat[0:N, 0:N] = 0.5 * Jx_mat_in
-Jx_mat[N:, N:]   = 0.5 * Jx_mat_in
-Jx_mat[0:N, N:]  = 0.5 * Jx_mat_out
-Jx_mat[N:, 0:N]  = 0.5 * Jx_mat_out
+Jx_mat[0:Nval, 0:Nval] = 0.5 * Jx_mat_in
+Jx_mat[Nval:, Nval:]   = 0.5 * Jx_mat_in
+Jx_mat[0:Nval, Nval:]  = 0.5 * Jx_mat_out
+Jx_mat[Nval:, 0:Nval]  = 0.5 * Jx_mat_out
 
-Jy_mat[0:N, 0:N] = 0.5 * Jy_mat_in
-Jy_mat[N:, N:]  =  0.5 * Jy_mat_in
-Jy_mat[0:N, N:]  = 0.5 * Jy_mat_out
-Jy_mat[N:, 0:N]  = 0.5 * Jy_mat_out
+Jy_mat[0:Nval, 0:Nval] = 0.5 * Jy_mat_in
+Jy_mat[Nval:, Nval:]  =  0.5 * Jy_mat_in
+Jy_mat[0:Nval, Nval:]  = 0.5 * Jy_mat_out
+Jy_mat[Nval:, 0:Nval]  = 0.5 * Jy_mat_out
 
-Jz_mat[0:N, 0:N] = 0.5 * Jz_mat_in
-Jz_mat[N:, N:]   = 0.5 * Jz_mat_in
-Jz_mat[0:N, N:]  = 0.5 * Jz_mat_out
-Jz_mat[N:, 0:N]  = 0.5 * Jz_mat_out
+Jz_mat[0:Nval, 0:Nval] = 0.5 * Jz_mat_in
+Jz_mat[Nval:, Nval:]   = 0.5 * Jz_mat_in
+Jz_mat[0:Nval, Nval:]  = 0.5 * Jz_mat_out
+Jz_mat[Nval:, 0:Nval]  = 0.5 * Jz_mat_out
 
 
-hX_mat_upper = - hX * np.ones(N)
-hY_mat_upper = - hY * np.ones(N)
-hZ_mat_upper = - hZ * np.ones(N)
+hX_mat_upper = - hX * np.ones(Nval)
+hY_mat_upper = - hY * np.ones(Nval)
+hZ_mat_upper = - hZ * np.ones(Nval)
 
-hX_mat_lower = hX * np.ones(N)
-hY_mat_lower = hY * np.ones(N)
-hZ_mat_lower = hZ * np.ones(N)
+hX_mat_lower = hX * np.ones(Nval)
+hY_mat_lower = hY * np.ones(Nval)
+hZ_mat_lower = hZ * np.ones(Nval)
 
-hX_mat = np.ones(2*N)
-hY_mat = np.ones(2*N)
-hZ_mat = np.ones(2*N)
+hX_mat = np.ones(2*Nval)
+hY_mat = np.ones(2*Nval)
+hZ_mat = np.ones(2*Nval)
 
-hX_mat[0:N] = hX_mat_upper
-hX_mat[N:] = hX_mat_lower
+hX_mat[0:Nval] = hX_mat_upper
+hX_mat[Nval:] = hX_mat_lower
 
-hY_mat[0:N] = hY_mat_upper
-hY_mat[N:] = hY_mat_lower
+hY_mat[0:Nval] = hY_mat_upper
+hY_mat[Nval:] = hY_mat_lower
 
-hZ_mat[0:N] = hZ_mat_upper
-hZ_mat[N:] = hZ_mat_lower
+hZ_mat[0:Nval] = hZ_mat_upper
+hZ_mat[Nval:] = hZ_mat_lower
+
 
 print('hz',np.shape(hZ_mat))
 print('Jz',np.shape(Jz_mat))
@@ -110,17 +111,16 @@ hX_path = f"{temp_save_loc}/pkl_store/hX_mat_{param_id}.pkl"
 hY_path = f"{temp_save_loc}/pkl_store/hY_mat_{param_id}.pkl"
 hZ_path = f"{temp_save_loc}/pkl_store/hZ_mat_{param_id}.pkl"
 
-# Save only if they don't already exist
-def maybe_dump(obj, filename):
-    if not os.path.exists(filename):
-        dump(obj, filename)
+# Save
+def always_dump(obj, filename):
+    dump(obj, filename)
 
-maybe_dump(Jx_mat, Jx_path)
-maybe_dump(Jy_mat, Jy_path)
-maybe_dump(Jz_mat, Jz_path)
-maybe_dump(hX_mat, hX_path)
-maybe_dump(hY_mat, hY_path)
-maybe_dump(hZ_mat, hZ_path)
+always_dump(Jx_mat, Jx_path)
+always_dump(Jy_mat, Jy_path)
+always_dump(Jz_mat, Jz_path)
+always_dump(hX_mat, hX_path)
+always_dump(hY_mat, hY_path)
+always_dump(hZ_mat, hZ_path)
 
 # Load using mmap_mode for shared access
 Jx_mat = load(Jx_path, mmap_mode='r')
@@ -134,16 +134,16 @@ hZ_mat = load(hZ_path, mmap_mode='r')
 timevec = dt * np.arange(0,timesteps+1)
 
 # Classical position of spin 
-S_init = np.zeros([2*N,3])
+S_init = np.zeros([2*Nval,3])
 #Upper layer
-S_init[0:N,0] = 0.0    # X position
-S_init[0:N,1] = 0.0    # Y position
-S_init[0:N,2] = 1.0    # Z position
+S_init[0:Nval,0] = 0.0    # X position
+S_init[0:Nval,1] = 0.0    # Y position
+S_init[0:Nval,2] = 1.0    # Z position
 
 #Lower layer
-S_init[N:,0] = 0.0     # X position
-S_init[N:,1] = 0.0     # Y position
-S_init[N:,2] = - 1.0   # Z position
+S_init[Nval:,0] = 0.0     # X position
+S_init[Nval:,1] = 0.0     # Y position
+S_init[Nval:,2] = - 1.0   # Z position
 
 CorrZ_mean_batch = []
 CorrY_mean_batch = []
@@ -166,24 +166,34 @@ Sy_std_batch = []
 Sz_std_batch = []
 Mxy_std_batch = []
 
+print("Shapes before integration:")
+print("Jx_mat:", Jx_mat.shape)
+print("Jy_mat:", Jy_mat.shape)
+print("Jz_mat:", Jz_mat.shape)
+print("hX_mat:", hX_mat.shape)
+print("hY_mat:", hY_mat.shape)
+print("hZ_mat:", hZ_mat.shape)
+print("S_init shape:", S_init.shape)
+print("hX_mat:", hX_mat)
+
 
 for bb in range(0,batches):
 
     print(bb)
 
-    Parallel(n_jobs=num_cores)(delayed(methods.dtwa_sc)(S_init, bb, ss, samples, timevec, 2 * N, Jx_mat, Jy_mat, Jz_mat, hX_mat, hY_mat, hZ_mat, temp_save_loc, rtol, atol) for ss in range(0,samples)) 
+    Parallel(n_jobs=num_cores)(delayed(methods.dtwa_sc_bilayer)(S_init, bb, ss, samples, timevec, 2 * Nval, Jx_mat, Jy_mat, Jz_mat, hX_mat, hY_mat, hZ_mat, temp_save_loc, rtol, atol) for ss in range(0,samples)) 
 
     # initialize matrices 
-    Sx_av =  np.zeros([2*N,timesteps+1])
-    Sy_av =  np.zeros([2*N,timesteps+1])
-    Sz_av =  np.zeros([2*N,timesteps+1])
+    Sx_av =  np.zeros([2*Nval,timesteps+1])
+    Sy_av =  np.zeros([2*Nval,timesteps+1])
+    Sz_av =  np.zeros([2*Nval,timesteps+1])
     Mxy_av = np.zeros(timesteps+1)
 
-    CorrZ_av =  np.zeros([2*N,2*N,timesteps+1])
-    CorrX_av =  np.zeros([2*N,2*N,timesteps+1])
-    CorrY_av =  np.zeros([2*N,2*N,timesteps+1]) 
-    CorrYZ_av = np.zeros([2*N,2*N,timesteps+1])
-    CorrXY_av = np.zeros([2*N,2*N,timesteps+1])
+    CorrZ_av =  np.zeros([2*Nval,2*Nval,timesteps+1])
+    CorrX_av =  np.zeros([2*Nval,2*Nval,timesteps+1])
+    CorrY_av =  np.zeros([2*Nval,2*Nval,timesteps+1]) 
+    CorrYZ_av = np.zeros([2*Nval,2*Nval,timesteps+1])
+    CorrXY_av = np.zeros([2*Nval,2*Nval,timesteps+1])
 
     for ss in range(0,samples):
         sx_sample = np.load(temp_save_loc + "Sx_sample_" + str(ss) + ".npy")
@@ -241,10 +251,12 @@ endTime = datetime.now()
 print(str(endTime - startTime),'Run time')
 
 # Calculate the minimum variance XX_A + YY_B + X_A Y_B + Y_B X_A
-Omin = CorrX_mean[0:N,0:N,:] + CorrY_mean[N:,N:,:] + 2 * CorrXY_mean[0:N,N:,:]
+Omin = CorrX_mean[0:Nval,0:Nval,:] + CorrY_mean[Nval:,Nval:,:] + 2 * CorrXY_mean[0:Nval,Nval:,:]
 Vmin_mean = np.sum(np.sum(Omin,0),1)
-Ostd = CorrX_std[0:N,0:N,:] + CorrY_std[N:,N:,:] + 2 * CorrXY_std[0:N,N:,:]
+Ostd = CorrX_std[0:Nval,0:Nval,:] + CorrY_std[Nval:,Nval:,:] + 2 * CorrXY_std[0:Nval,Nval:,:]
 Vmin_std = np.sum(np.sum(Ostd,0),1)
+
+Signal = np.sum(Sz_mean[0:Nval,:] - Sz_mean[Nval:,:],0)
 
 np.save(loc + "Sy.npy",Sy_mean)
 np.save(loc + "Sx.npy",Sx_mean)
@@ -265,3 +277,5 @@ np.save(loc + "SzSz_std.npy",np.sum(np.sum(CorrZ_std,0),0))
 np.save(loc + "timevec.npy",timevec)
 np.save(loc + "Vmin.npy",Vmin_mean)
 np.save(loc + "Vmin_std.npy",Vmin_std)
+np.save(loc + "SzA_minus_SzB.npy",Signal)
+

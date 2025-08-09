@@ -423,6 +423,51 @@ def integration_schemes_sc(S_init_ss, timevec, N, Jx_mat, Jy_mat, Jz_mat, hX_mat
     np.save(save_loc + "Sz_sample_" + str(ss) + ".npy", Sz) 
 
 
+def integration_schemes_sc_debug(S_init_ss, timevec, N, Jx_mat, Jy_mat, Jz_mat, hX_mat, hY_mat, hZ_mat,save_loc,ss,rtol, atol):
+
+    y_init = np.zeros([3 * N])
+    y_init[0:N] = S_init_ss[:,0]
+    y_init[N:(2*N)]  = S_init_ss[:,1]
+    y_init[(2*N):(3*N)] = S_init_ss[:,2]
+         
+    def func(t, y):
+
+        dy = np.zeros(3 * N)
+
+        y1 = y[0:N].reshape(-1)      # shape (N,)
+        y2 = y[N:2*N].reshape(-1)    # shape (N,)
+        y3 = y[2*N:3*N].reshape(-1)  # shape (N,)
+        
+        y1 = y1.flatten()
+        y2 = y2.flatten()
+        y3 = y3.flatten()
+
+        Jz_y3 = Jz_mat @ y3          # shape (N,)
+        Jy_y2 = Jy_mat @ y2          # shape (N,)
+        Jx_y1 = Jx_mat @ y1          # shape (N,)
+
+        dy[0:N] =  -2 * y2 * Jz_y3 + 2 * y3 * Jy_y2 + 2 * y3 * hY_mat - 2 * y2 * hZ_mat
+        dy[N:2*N] = 2 * y1 * Jz_y3 - 2 * y3 * Jx_y1 - 2 * y3 * hX_mat + 2 * y1 * hZ_mat
+        dy[2*N:3*N] = -2 * y1 * Jy_y2 + 2 * y2 * Jx_y1 + 2 * y2 * hX_mat - 2 * y1 * hY_mat
+
+        return dy
+
+    #y = scipy.integrate.odeint(func, y_init, timevec) # func(y,t) order needed, and need transpose below and y = sol
+    sol = scipy.integrate.solve_ivp(func, [0, timevec[-1]], y_init, method = 'RK45', t_eval = timevec, rtol = rtol, atol = atol)
+
+    y = sol.y
+
+    Sx = y[0:N,:]
+    Sy = y[N:(2*N),:]
+    Sz = y[(2*N):(3*N),:]
+
+    
+    np.save(save_loc + "Sx_sample_" + str(ss) + ".npy", Sx) 
+    np.save(save_loc + "Sy_sample_" + str(ss) + ".npy", Sy) 
+    np.save(save_loc + "Sz_sample_" + str(ss) + ".npy", Sz) 
+
+
+# the following only differs from the dtwa_sc code in that it checks the state of every spin, rather than just the first spin and assume translational inv. state
 def dtwa_sc_bilayer(S_init, bb, ss, samples, timevec, N, Jx_mat, Jy_mat, Jz_mat, hX_mat, hY_mat, hZ_mat, save_loc, rtol, atol):
 
     np.random.seed(bb * samples + ss)   

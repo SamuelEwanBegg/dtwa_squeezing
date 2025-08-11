@@ -28,7 +28,7 @@ hX = 0.0
 hY = 0.0
 hZ = 0.0
 alpha = 0.0
-az = 2.0
+az = 10.0
 
 # Simulation parameters
 L = XX
@@ -36,8 +36,7 @@ Nval = L**2
 samples = 640 #samples per batch
 batches = 5   #int(total_samples / samples)
 total_samples = samples * batches
-timesteps = 400
-dt = 0.01 # save times 
+timesteps = 200
 rtol = 10**(-7)
 atol = 10**(-10)
 num_cores = -1
@@ -57,6 +56,10 @@ Jz_mat_in = Jz_in * methods.gen_matrices_2D_pbc(Nval, alpha)
 Jx_mat_out = Jx_out * methods.gen_matrices_2D_pbc_bilayer(Nval, alpha, az)
 Jy_mat_out = Jy_out * methods.gen_matrices_2D_pbc_bilayer(Nval, alpha, az)
 Jz_mat_out = Jz_out * methods.gen_matrices_2D_pbc_bilayer(Nval, alpha, az)
+
+Vavg = 1.0/Nval**2 * np.sum(Jx_mat_out)  
+total_time = 15.0 / (Vavg * Nval) 
+dt = total_time / float(timesteps)
 
 Jx_mat = np.zeros([2*Nval, 2*Nval])
 Jy_mat = np.zeros([2*Nval, 2*Nval])
@@ -99,9 +102,6 @@ hY_mat[Nval:] = hY_mat_lower
 hZ_mat[0:Nval] = hZ_mat_upper
 hZ_mat[Nval:] = hZ_mat_lower
 
-
-print('hz',np.shape(hZ_mat))
-print('Jz',np.shape(Jz_mat))
 
 # File paths with unique suffix
 Jx_path = f"{temp_save_loc}/pkl_store/Jx_mat_{param_id}.pkl"
@@ -165,16 +165,6 @@ Sx_std_batch = []
 Sy_std_batch = []
 Sz_std_batch = []
 Mxy_std_batch = []
-
-print("Shapes before integration:")
-print("Jx_mat:", Jx_mat.shape)
-print("Jy_mat:", Jy_mat.shape)
-print("Jz_mat:", Jz_mat.shape)
-print("hX_mat:", hX_mat.shape)
-print("hY_mat:", hY_mat.shape)
-print("hZ_mat:", hZ_mat.shape)
-print("S_init shape:", S_init.shape)
-print("hX_mat:", hX_mat)
 
 
 for bb in range(0,batches):
@@ -251,10 +241,10 @@ endTime = datetime.now()
 print(str(endTime - startTime),'Run time')
 
 # Calculate the minimum variance XX_A + YY_B + X_A Y_B + Y_B X_A
-Omin = CorrX_mean[0:Nval,0:Nval,:] + CorrY_mean[Nval:,Nval:,:] + 2 * CorrXY_mean[0:Nval,Nval:,:]
-Vmin_mean = np.sum(np.sum(Omin,0),1)
-Ostd = CorrX_std[0:Nval,0:Nval,:] + CorrY_std[Nval:,Nval:,:] + 2 * CorrXY_std[0:Nval,Nval:,:]
-Vmin_std = np.sum(np.sum(Ostd,0),1)
+Omin = CorrX_mean[0:Nval,0:Nval,:] + CorrY_mean[Nval:,Nval:,:] - 2 * CorrXY_mean[0:Nval,Nval:,:]
+Vmin_mean = np.sum(np.sum(Omin,0),0)
+Ostd = CorrX_std[0:Nval,0:Nval,:] + CorrY_std[Nval:,Nval:,:] - 2 * CorrXY_std[0:Nval,Nval:,:]
+Vmin_std = np.sum(np.sum(Ostd,0),0)
 
 Signal = np.sum(Sz_mean[0:Nval,:] - Sz_mean[Nval:,:],0)
 
@@ -266,16 +256,19 @@ np.save(loc + "Sy_std.npy",Sy_std)
 np.save(loc + "Sx_std.npy",Sx_std)
 np.save(loc + "Sz_std.npy",Sz_std)
 np.save(loc + "Mxy_std.npy",Mxy_std)
-np.save(loc + "SySz.npy",np.sum(np.sum(CorrYZ_mean,0),0))
-np.save(loc + "SySy.npy",np.sum(np.sum(CorrY_mean,0),0))
-np.save(loc + "SxSx.npy",np.sum(np.sum(CorrX_mean,0),0))
-np.save(loc + "SzSz.npy",np.sum(np.sum(CorrZ_mean,0),0))
-np.save(loc + "SySz_std.npy",np.sum(np.sum(CorrYZ_std,0),0))
-np.save(loc + "SySy_std.npy",np.sum(np.sum(CorrY_std,0),0))
-np.save(loc + "SxSx_std.npy",np.sum(np.sum(CorrX_std,0),0))
-np.save(loc + "SzSz_std.npy",np.sum(np.sum(CorrZ_std,0),0))
+#np.save(loc + "SxSy.npy",np.sum(np.sum(CorrXY_mean,0),0))
+#np.save(loc + "SySz.npy",np.sum(np.sum(CorrYZ_mean,0),0))
+#np.save(loc + "SySy.npy",np.sum(np.sum(CorrY_mean,0),0))
+#np.save(loc + "SxSx.npy",np.sum(np.sum(CorrX_mean,0),0))
+#np.save(loc + "SzSz.npy",np.sum(np.sum(CorrZ_mean,0),0))
+#np.save(loc + "SySz_std.npy",np.sum(np.sum(CorrYZ_std,0),0))
+#np.save(loc + "SySy_std.npy",np.sum(np.sum(CorrY_std,0),0))
+#np.save(loc + "SxSx_std.npy",np.sum(np.sum(CorrX_std,0),0))
+#np.save(loc + "SzSz_std.npy",np.sum(np.sum(CorrZ_std,0),0))
 np.save(loc + "timevec.npy",timevec)
 np.save(loc + "Vmin.npy",Vmin_mean)
 np.save(loc + "Vmin_std.npy",Vmin_std)
 np.save(loc + "SzA_minus_SzB.npy",Signal)
+np.save(loc + "Vavg.npy",Vavg)
+
 

@@ -31,7 +31,7 @@ alpha = 3.0
 samples = 640 #samples per batch
 batches = 10   #int(total_samples / samples)
 total_samples = samples * batches
-timesteps = 130
+timesteps = 350
 dt = 0.005 # save times 
 rtol = 10**(-7)
 atol = 10**(-10)
@@ -39,16 +39,24 @@ num_cores = -1
 plot_ED = "False"
 L = XX # square lattice length 
 Ninit = L**2
-lambda0 = 2.0
+#lambda0 = 2.0
 
 disorder_seed = ZZ
 np.random.seed(disorder_seed)
 
 #now draw Poisson distribution with mean of lambda to see if spin is accepted
 #lattice_NVC_count = scipy.stats.poisson.rvs(lambda0, size=Ninit)	
-lattice_NVC_count =  np.rint(np.ones(Ninit) + 0.6 * rand.normal(0,1,Ninit))	
+
+# draw from random distribution, probability 1 - p of NVC on a site
+p = 0.5
+rand_draws = rand.uniform(0,1,Ninit)
+lattice_NVC_count = np.ones(Ninit,dtype=int)
+
+for ii in range(0,Ninit):
+    if rand_draws[ii] < p:
+        lattice_NVC_count[ii] = 0
+
 positions = copy.copy(lattice_NVC_count)
-positions[positions > 1] = 0 #set all non-zero values to 1
 
 # Generate interaction matrices
 J_mat, xx_filt, yy_filt = methods.gen_matrices_2D_pbc_vacancy(Ninit, alpha, positions)

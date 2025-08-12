@@ -27,8 +27,8 @@ Jz_out = 0.0
 hX = 0.0
 hY = 0.0
 hZ = 0.0
-alpha = 0.0
-az = 10.0
+alpha = 3.0
+az = 2.0
 
 # Simulation parameters
 L = XX

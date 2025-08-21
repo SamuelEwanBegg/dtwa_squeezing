@@ -21,14 +21,29 @@ temp_save_loc = "/home/dal993192/scratch/LOCATION/YY/"
 Jx_in = 1.0
 Jy_in = 1.0
 Jz_in = 1.0
-Jx_out = 1.0
-Jy_out = 1.0
+Jx_out = 1.0 
+Jy_out = Jx_out
 Jz_out = 0.0
 hX = 0.0
 hY = 0.0
 hZ = 0.0
 alpha = 3.0
 az = 2.0
+
+nu = 0.0 # frame/state angle 
+
+# correction to out interactions (assumed Jz_out = 0 in current version for simplicity)
+Jx_out = Jx_out * np.cos(nu)
+Jy_out = Jy_out * np.cos(nu)
+Jxz_out = np.sin(nu) * Jx_out # (assumed Jx = Jy) 
+Jzy_out = np.sin(nu) * Jx_out # (assumed Jx = Jy)
+
+#frame introduces contribution to magnetic field
+hx_A = 0.0
+hx_B = hz * np.sin(nu)  
+hy_A = hz * np.sin(nu) 
+hy_b = 0.0
+hz = hz * np.cos(nu)
 
 # Simulation parameters
 L = XX
@@ -56,6 +71,8 @@ Jz_mat_in = Jz_in * methods.gen_matrices_2D_pbc(Nval, alpha)
 Jx_mat_out = Jx_out * methods.gen_matrices_2D_pbc_bilayer(Nval, alpha, az)
 Jy_mat_out = Jy_out * methods.gen_matrices_2D_pbc_bilayer(Nval, alpha, az)
 Jz_mat_out = Jz_out * methods.gen_matrices_2D_pbc_bilayer(Nval, alpha, az)
+Jxz_mat_out = Jxz_out * methods.gen_matrices_2D_pbc_bilayer(Nval, alpha, az)
+Jzy_mat_out = Jzy_out * methods.gen_matrices_2D_pbc_bilayer(Nval, alpha, az)
 
 Vavg = 1.0/Nval**2 * np.sum(Jx_mat_out)  
 total_time = 15.0 / (Vavg * Nval) 
@@ -64,6 +81,8 @@ dt = total_time / float(timesteps)
 Jx_mat = np.zeros([2*Nval, 2*Nval])
 Jy_mat = np.zeros([2*Nval, 2*Nval])
 Jz_mat = np.zeros([2*Nval, 2*Nval])
+Jxz_mat = np.zeros([2*Nval, 2*Nval])
+Jzy_mat = np.zeros([2*Nval, 2*Nval])
 
 Jx_mat[0:Nval, 0:Nval] = 0.5 * Jx_mat_in
 Jx_mat[Nval:, Nval:]   = 0.5 * Jx_mat_in
@@ -80,13 +99,20 @@ Jz_mat[Nval:, Nval:]   = 0.5 * Jz_mat_in
 Jz_mat[0:Nval, Nval:]  = 0.5 * Jz_mat_out
 Jz_mat[Nval:, 0:Nval]  = 0.5 * Jz_mat_out
 
+# The two frame correction matrices, which have no in-layer part
+Jxz_mat[0:Nval, Nval:]  = 0.5 * Jxz_mat_out
+Jxz_mat[Nval:, 0:Nval]  = 0.5 * Jxz_mat_out
 
-hX_mat_upper = - hX * np.ones(Nval)
-hY_mat_upper = - hY * np.ones(Nval)
+Jzy_mat[0:Nval, Nval:]  = 0.5 * Jzy_mat_out
+Jzy_mat[Nval:, 0:Nval]  = 0.5 * Jzy_mat_out
+
+
+hX_mat_upper = hX_A * np.ones(Nval)
+hY_mat_upper = hY_A * np.ones(Nval)
 hZ_mat_upper = - hZ * np.ones(Nval)
 
-hX_mat_lower = hX * np.ones(Nval)
-hY_mat_lower = hY * np.ones(Nval)
+hX_mat_lower = hX_B * np.ones(Nval)
+hY_mat_lower = hY_B * np.ones(Nval)
 hZ_mat_lower = hZ * np.ones(Nval)
 
 hX_mat = np.ones(2*Nval)
@@ -107,6 +133,8 @@ hZ_mat[Nval:] = hZ_mat_lower
 Jx_path = f"{temp_save_loc}/pkl_store/Jx_mat_{param_id}.pkl"
 Jy_path = f"{temp_save_loc}/pkl_store/Jy_mat_{param_id}.pkl"
 Jz_path = f"{temp_save_loc}/pkl_store/Jz_mat_{param_id}.pkl"
+Jxz_path = f"{temp_save_loc}/pkl_store/Jxz_mat_{param_id}.pkl"
+Jzy_path = f"{temp_save_loc}/pkl_store/Jzy_mat_{param_id}.pkl"
 hX_path = f"{temp_save_loc}/pkl_store/hX_mat_{param_id}.pkl"
 hY_path = f"{temp_save_loc}/pkl_store/hY_mat_{param_id}.pkl"
 hZ_path = f"{temp_save_loc}/pkl_store/hZ_mat_{param_id}.pkl"
@@ -118,6 +146,8 @@ def always_dump(obj, filename):
 always_dump(Jx_mat, Jx_path)
 always_dump(Jy_mat, Jy_path)
 always_dump(Jz_mat, Jz_path)
+always_dump(Jxz_mat, Jxz_path)
+always_dump(Jzy_mat, Jzy_path)
 always_dump(hX_mat, hX_path)
 always_dump(hY_mat, hY_path)
 always_dump(hZ_mat, hZ_path)
@@ -126,9 +156,12 @@ always_dump(hZ_mat, hZ_path)
 Jx_mat = load(Jx_path, mmap_mode='r')
 Jy_mat = load(Jy_path, mmap_mode='r')
 Jz_mat = load(Jz_path, mmap_mode='r')
+Jxz_mat = load(Jxz_path, mmap_mode='r')
+Jzy_mat = load(Jzy_path, mmap_mode='r')
 hX_mat = load(hX_path, mmap_mode='r')
 hY_mat = load(hY_path, mmap_mode='r')
 hZ_mat = load(hZ_path, mmap_mode='r')
+
 
 # define for later use
 timevec = dt * np.arange(0,timesteps+1)
@@ -171,7 +204,8 @@ for bb in range(0,batches):
 
     print(bb)
 
-    Parallel(n_jobs=num_cores)(delayed(methods.dtwa_sc_bilayer)(S_init, bb, ss, samples, timevec, 2 * Nval, Jx_mat, Jy_mat, Jz_mat, hX_mat, hY_mat, hZ_mat, temp_save_loc, rtol, atol) for ss in range(0,samples)) 
+    #alter definition here, define bilayer_EP
+    Parallel(n_jobs=num_cores)(delayed(methods.dtwa_sc_bilayer_EP)(S_init, bb, ss, samples, timevec, 2 * Nval, Jx_mat, Jy_mat, Jz_mat, hX_mat, hY_mat, hZ_mat, temp_save_loc, rtol, atol) for ss in range(0,samples)) 
 
     # initialize matrices 
     Sx_av =  np.zeros([2*Nval,timesteps+1])

@@ -28,10 +28,10 @@ hZ = 0.0
 alpha = 3.0
 
 # Simulation parameters
-samples = 20  #samples per batch
-batches = 1   #int(total_samples / samples)
+samples = 640  #samples per batch
+batches = 10   #int(total_samples / samples)
 total_samples = samples * batches
-timesteps = 350
+timesteps = 250
 dt = 0.005 # save times 
 rtol = 10**(-7)
 atol = 10**(-10)
@@ -48,7 +48,7 @@ np.random.seed(disorder_seed)
 #lattice_NVC_count = scipy.stats.poisson.rvs(lambda0, size=Ninit)	
 
 # draw from random distribution, probability 1 - p of NVC on a site
-p = 0.0
+p = 0.25
 rand_draws = rand.uniform(0,1,Ninit)
 lattice_NVC_count = np.ones(Ninit,dtype=int)
 
@@ -164,6 +164,8 @@ for bb in range(0,batches):
         CorrX_av  += 1.0 / samples * np.einsum('nt,mt->nmt', sx_sample, sx_sample)
         CorrY_av  += 1.0 / samples * np.einsum('nt,mt->nmt', sy_sample, sy_sample)
         CorrYZ_av += 1.0 / samples * np.einsum('nt,mt->nmt', sy_sample, sz_sample)
+
+        del sx_sample, sy_sample, sz_sample
 
     # Add to batch lists
     Sx_mean_batch += [Sx_av]

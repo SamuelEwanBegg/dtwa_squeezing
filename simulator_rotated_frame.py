@@ -204,8 +204,8 @@ for bb in range(0,batches):
 
     print(bb)
 
-    #alter definition here, define bilayer_EP
-    Parallel(n_jobs=num_cores)(delayed(methods.dtwa_sc_bilayer_EP)(S_init, bb, ss, samples, timevec, 2 * Nval, Jx_mat, Jy_mat, Jz_mat, hX_mat, hY_mat, hZ_mat, temp_save_loc, rtol, atol) for ss in range(0,samples)) 
+    #alter definition here, define bilayer_rotated
+    Parallel(n_jobs=num_cores)(delayed(methods.dtwa_sc_bilayer_rotated)(S_init, bb, ss, samples, timevec, 2 * Nval, Jx_mat, Jy_mat, Jz_mat, hX_mat, hY_mat, hZ_mat, temp_save_loc, rtol, atol) for ss in range(0,samples)) 
 
     # initialize matrices 
     Sx_av =  np.zeros([2*Nval,timesteps+1])

@@ -23,14 +23,14 @@ Jy_in = 1.0
 Jz_in = 1.0
 Jx_out = 1.0
 Jy_out = 1.0
-Jz_out = 0.0
+Jz_out = 1.0
 hX = 0.0
 hY = 0.0
-hZ = 0.0
+hZ = 0.1 
 alpha = 3.0
-az = 2.0
+az = 10.0
 
-nu = 0.0 # state angle 
+nu = 0.1 # state angle 
 
 # Simulation parameters
 L = XX
@@ -43,7 +43,6 @@ rtol = 10**(-7)
 atol = 10**(-10)
 num_cores = -1
 plot_ED = "False"
-
 
 # Construct a unique ID based on simulation parameters
 param_id = f"N{Nval}_alpha{alpha:.2f}_Jx_in{Jx_in:.2f}_Jy_in{Jy_in:.2f}_Jz_in{Jz_in:.2f}_Jx_out{Jx_out:.2f}_Jy_out{Jy_out:.2f}_Jz_out{Jz_out:.2f}_hX{hX:.2f}_hY{hY:.2f}_hZ{hZ:.2f}_total_samples{total_samples}"
@@ -173,7 +172,7 @@ for bb in range(0,batches):
 
     print(bb)
 
-    Parallel(n_jobs=num_cores)(delayed(methods.dtwa_sc_bilayer)(S_init, bb, ss, samples, timevec, 2 * Nval, Jx_mat, Jy_mat, Jz_mat, hX_mat, hY_mat, hZ_mat, temp_save_loc, rtol, atol) for ss in range(0,samples)) 
+    Parallel(n_jobs=num_cores)(delayed(methods.dtwa_sc_bilayer_EP)(S_init, bb, ss, samples, timevec, 2 * Nval, Jx_mat, Jy_mat, Jz_mat, hX_mat, hY_mat, hZ_mat, nu, temp_save_loc, rtol, atol) for ss in range(0,samples)) 
 
     # initialize matrices 
     Sx_av =  np.zeros([2*Nval,timesteps+1])

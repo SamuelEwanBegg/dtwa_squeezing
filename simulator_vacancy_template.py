@@ -31,7 +31,7 @@ alpha = 3.0
 samples = 640  #samples per batch
 batches = 10   #int(total_samples / samples)
 total_samples = samples * batches
-timesteps = 250
+timesteps = 170
 dt = 0.005 # save times 
 rtol = 10**(-7)
 atol = 10**(-10)
@@ -39,16 +39,16 @@ num_cores = -1
 plot_ED = "False"
 L = XX # square lattice length 
 Ninit = L**2
-#lambda0 = 2.0
 
 disorder_seed = ZZ
 np.random.seed(disorder_seed)
 
 #now draw Poisson distribution with mean of lambda to see if spin is accepted
+#lambda0 = 2.0
 #lattice_NVC_count = scipy.stats.poisson.rvs(lambda0, size=Ninit)	
 
 # draw from random distribution, probability 1 - p of NVC on a site
-p = 0.25
+p = 0.0
 rand_draws = rand.uniform(0,1,Ninit)
 lattice_NVC_count = np.ones(Ninit,dtype=int)
 

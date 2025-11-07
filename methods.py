@@ -719,3 +719,43 @@ def poisson_filter(lambda0, xMax, yMax, lower_threshold, upper_threshold):
 
     return J_new, distances_new, distances, xx_new, yy_new, xx, yy
 
+
+def update_stats(x, n, mean, M2):
+    """
+    Update running mean and std (Welford's algorithm).
+
+    Parameters
+    ----------
+    x : float or np.ndarray
+        New data point (or array of values).
+    n : int
+        Current count (before adding x).
+    mean : float or np.ndarray
+        Current running mean.
+    M2 : float or np.ndarray
+        Sum of squared deviations from the mean.
+
+    Returns
+    -------
+    n_new : int
+        Updated count.
+    mean_new : float or np.ndarray
+        Updated mean.
+    std_new : float or np.ndarray
+        Updated standard deviation (unbiased, ddof=1).
+    M2_new : float or np.ndarray
+        Updated M2 (for future updates).
+    """
+    n_new = n + 1
+    delta = x - mean
+    mean_new = mean + delta / n_new
+    M2_new = M2 + delta * (x - mean_new)
+
+    if n_new < 2:
+        std_new = 0.0 if np.isscalar(x) else np.zeros_like(x)
+    else:
+        std_new = (M2_new / (n_new - 1))**0.5
+
+    return n_new, mean_new, std_new, M2_new
+
+

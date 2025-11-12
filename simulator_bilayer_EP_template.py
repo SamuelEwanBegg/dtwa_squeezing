@@ -1,5 +1,10 @@
+print(str(startTime),'Commence code')
+
+#save file location
+loc = "/Users/samuelbegg/Documents/Projects/EP_sensing/sc_results/result/"
+temp_save_loc = loc
+
 import numpy as np
-import matplotlib.pyplot as plt
 import methods 
 import numpy.random as rand
 from joblib import Parallel, delayed, dump, load
@@ -7,14 +12,16 @@ import copy
 import scipy.integrate
 from datetime import datetime
 startTime = datetime.now()
+
 import os
+print(f"SLURM_CPUS_PER_TASK: {os.environ.get('SLURM_CPUS_PER_TASK')}")
+print(f"SLURM_JOB_CPUS_PER_NODE: {os.environ.get('SLURM_JOB_CPUS_PER_NODE')}")
 
 print(str(startTime),'Commence code')
 
 #save file location
-loc = "/Users/samuelbegg/Documents/Projects/EP_sensing/sc_results/result/"
-temp_save_loc = loc
-
+loc = "/home/dal993192/dtwa_squeezing/results/bilayer/LOCATION1/LOCATION2/"
+temp_save_loc = "/home/dal993192/scratch/bilayer/LOCATION1/LOCATION2/"
 
 Jx_in = 1.0 # interaction terms
 Jy_in = 1.0
@@ -24,13 +31,13 @@ Jy_out = 1.0
 Jz_out = 0.0
 hX = 0.0 # magnetic fields are in Pauli matrix convention (double compared to spin convention)
 hY = 0.0
-delta_hZ = 0.025 # fractional magnetic field perturbation (see definition below)
+delta_hZ = YY # fractional magnetic field perturbation (see definition below)
 alpha = 3.0 # power-law
 az = 10.0 # interlayer distance
 nu = 0.0 # frame/state angle 
 
 # Simulation parameters
-L = 50
+L = XX
 Nval = L**2
 samples = 32  #samples per batch
 batches = 20   #int(total_samples / samples)

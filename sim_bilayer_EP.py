@@ -15,30 +15,31 @@ print(str(startTime),'Commence code')
 loc = "/Users/samuelbegg/Documents/Projects/EP_sensing/sc_results/result/"
 temp_save_loc = loc
 
-Jx_in = 1.0
+
+Jx_in = 1.0 # interaction terms
 Jy_in = 1.0
 Jz_in = 1.0
 Jx_out = 1.0
 Jy_out = 1.0
 Jz_out = 0.0
-hX = 0.0
+hX = 0.0 # magnetic fields are in Pauli matrix convention (double compared to spin convention)
 hY = 0.0
-delta_hZ = 0.0  
-alpha = 3.0
-az = 10.0
+delta_hZ = 0.025 # fractional magnetic field perturbation (see definition below)
+alpha = 3.0 # power-law
+az = 10.0 # interlayer distance
 nu = 0.0 # frame/state angle 
 
 # Simulation parameters
-L = 3
+L = 50
 Nval = L**2
-samples = 100  #samples per batch
-batches = 5   #int(total_samples / samples)
+samples = 32  #samples per batch
+batches = 20   #int(total_samples / samples)
 total_samples = samples * batches
-timesteps = 300
-rtol = 10**(-5)
-atol = 10**(-8)
+timesteps = 1000
+rtol = 10**(-3)
+atol = 10**(-5)
 num_cores = -1
-plot_ED = "False"
+
 
 # layer resolved field signs
 hX_A = 0.0
@@ -58,18 +59,18 @@ Jy_mat_out = Jy_out * methods.gen_matrices_2D_pbc_bilayer(Nval, alpha, az)
 Jz_mat_out = Jz_out * methods.gen_matrices_2D_pbc_bilayer(Nval, alpha, az)
 
 av_inter = np.mean(Jx_mat_out[0,:]) 
-hZ = Nval * av_inter * (1.0 + delta_hZ)
+hZ =   (0.5 * Nval * av_inter + 0.01)  * (1.0 + delta_hZ)  # factor of 1/2 is due to Pauli definition
 hZ_A = hZ 
 hZ_B = - hZ
 
 print("av interaction", np.round(av_inter,5), "delta hZ", np.round(delta_hZ,5))
 
 # Construct a unique ID based on simulation parameters
-param_id = f"N{Nval}_alpha{alpha:.2f}_Jx_in{Jx_in:.2f}_Jy_in{Jy_in:.2f}_Jz_in{Jz_in:.2f}_Jx_out{Jx_out:.2f}_Jy_out{Jy_out:.2f}_Jz_out{Jz_out:.2f}_hX{hX:.2f}_hY{hY:.2f}_hZ{hZ:.5f}_delta_hZ{delta_hZ:.5f}_total_samples{total_samples}"
+param_id = f"N{Nval}_alpha{alpha:.2f}_Jx_in{Jx_in:.2f}_Jy_in{Jy_in:.2f}_Jz_in{Jz_in:.2f}_Jx_out{Jx_out:.2f}_Jy_out{Jy_out:.2f}_Jz_out{Jz_out:.2f}_hX{hX:.2f}_hY{hY:.2f}_hZ{hZ:.5f}_delta_hZ{delta_hZ:.5f}_aZ{az:.3f}_total_samples{total_samples}"
 print(param_id)
 
 Vavg = 1.0/Nval**2 * np.sum(Jx_mat_out)  
-total_time = 20.0 / (Vavg * Nval) 
+total_time = 10.0 / (Vavg * Nval) 
 dt = total_time / float(timesteps)
 
 Jx_mat = np.zeros([2*Nval, 2*Nval])
@@ -319,6 +320,7 @@ np.save(loc + "Vmin.npy",Var_mean)
 np.save(loc + "Vmin_std.npy",Var_std)
 
 # save time vector and Vavg
+np.save(loc + "Nval.npy",Nval)
 np.save(loc + "timevec.npy",timevec)
 np.save(loc + "Vavg.npy",Vavg)
 

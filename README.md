@@ -8,4 +8,5 @@ Evaluates magnetization, correlations and squeezing for Heisenberg models within
 
 - simulator_poisson_disorder_template.py simulator code for Monte Carlo equation where the disorder is Poisson.
 
-- simulator_bilayer.py simulator for the bilayer system 
+- simulator_bilayer_EP.py simulator for the bilayer system that can be run locally. 
+- simulator_bilayer_EP_template.py simulator for the bilayer system that can be run on the cluster. 

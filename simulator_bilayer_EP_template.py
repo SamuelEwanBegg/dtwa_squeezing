@@ -20,7 +20,7 @@ print(f"SLURM_JOB_CPUS_PER_NODE: {os.environ.get('SLURM_JOB_CPUS_PER_NODE')}")
 print(str(startTime),'Commence code')
 
 #save file location
-loc = "/home/dal993192/dtwa_squeezing/results/bilayer/LOCATION1/LOCATION2/"
+loc = "/home/dal993192/dtwa_squeezing/dtwa_squeezing/results/bilayer/LOCATION1/LOCATION2/"
 temp_save_loc = "/home/dal993192/scratch/bilayer/LOCATION1/LOCATION2/"
 
 Jx_in = 1.0 # interaction terms
@@ -66,7 +66,7 @@ Jy_mat_out = Jy_out * methods.gen_matrices_2D_pbc_bilayer(Nval, alpha, az)
 Jz_mat_out = Jz_out * methods.gen_matrices_2D_pbc_bilayer(Nval, alpha, az)
 
 av_inter = np.mean(Jx_mat_out[0,:]) 
-hZ =   (0.5 * Nval * av_inter + 0.01)  * (1.0 + delta_hZ)  # factor of 1/2 is due to Pauli definition
+hZ =   (0.5 * Nval * av_inter)  * (1.0 + delta_hZ)  # factor of 1/2 is due to Pauli definition
 hZ_A = hZ 
 hZ_B = - hZ
 

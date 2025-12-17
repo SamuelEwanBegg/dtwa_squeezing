@@ -1,5 +1,4 @@
 import numpy as np
-import matplotlib.pyplot as plt
 import methods 
 import numpy.random as rand
 from joblib import Parallel, delayed, dump, load
@@ -16,25 +15,26 @@ print(f"SLURM_JOB_CPUS_PER_NODE: {os.environ.get('SLURM_JOB_CPUS_PER_NODE')}")
 print(str(startTime),'Commence code')
 
 #save file location
-loc = "/home/dal993192/dtwa_squeezing/results/LOCATION/YY/runVV/"
-temp_save_loc = "/home/dal993192/scratch/LOCATION/YY/runVV/"
+loc = "/home/dal993192/dtwa_squeezing/results/LOCATION1/LOCATION2/YY/runVV/"
+temp_save_loc = "/home/dal993192/scratch/LOCATION1/LOCATION2/YY/runVV/"  #/groups/cmt/LO
 
 Jx = -1.0
 Jy = -1.0
-Jz = 1.0
+Jz = JJ
 hX = 0.0
 hY = 0.0
 hZ = 0.0
 alpha = 3.0
 
 # Simulation parameters
-samples = 640  #samples per batch
-batches = 10   #int(total_samples / samples)
+samples = 320  #samples per batch
+batches = 40   
 total_samples = samples * batches
-timesteps = 200
-dt = 0.005 # save times 
-rtol = 10**(-7)
-atol = 10**(-10)
+Jeff_t = CC / 4.0  #factor 4 for spin to pauli matrix conversion 
+Jeff = DD 
+timesteps = 500
+rtol = 10**(-3)
+atol = 10**(-6)
 num_cores = -1
 plot_ED = "False"
 L = XX # square lattice length 
@@ -48,10 +48,10 @@ np.random.seed(disorder_seed)
 #lattice_NVC_count = scipy.stats.poisson.rvs(lambda0, size=Ninit)	
 
 # draw from random distribution, probability 1 - p of NVC on a site
-p = 0.0
+p = TT
+
 rand_draws = rand.uniform(0,1,Ninit)
 lattice_NVC_count = np.ones(Ninit,dtype=int)
-
 # Arbitrary angle correlator/variance
 maxNu = 10000
 nu_indices = np.arange(0,maxNu)
@@ -76,8 +76,13 @@ hX_mat = hX * np.ones(N)
 hY_mat = hY * np.ones(N)
 hZ_mat = hZ * np.ones(N)
 
+# time parameters
+total_time = Jeff_t / Jeff
+dt = total_time / float(timesteps) # time step to save at 
+timevec = dt * np.arange(0,timesteps+1) # vector of saved times
+
 # Construct a unique ID based on simulation parameters
-param_id = f"N{N}_alpha{alpha:.2f}_Jx{Jx:.2f}_Jy{Jy:.2f}_Jz{Jz:.2f}_hX{hX:.2f}_hY{hY:.2f}_hZ{hZ:.2f}_total_samples{total_samples}_timesteps{timesteps}_dt{dt:.2f}"
+param_id = f"N{N}_alpha{alpha:.2f}_Jx{Jx:.2f}_Jy{Jy:.2f}_Jz{Jz:.2f}_hX{hX:.2f}_hY{hY:.2f}_hZ{hZ:.2f}_total_samples{total_samples}_timesteps{timesteps}_dt{dt:.3f}"
 print(param_id)
 
 # File paths with unique suffix
@@ -90,6 +95,7 @@ hZ_path = f"{temp_save_loc}/pkl_store/hZ_mat_{param_id}.pkl"
 
 # Save only if they don't already exist
 def maybe_dump(obj, filename):
+
     if not os.path.exists(filename):
         dump(obj, filename)
 
@@ -108,8 +114,6 @@ hX_mat = load(hX_path, mmap_mode='r')
 hY_mat = load(hY_path, mmap_mode='r')
 hZ_mat = load(hZ_path, mmap_mode='r')
 
-# define for later use
-timevec = dt * np.arange(0,timesteps+1)
 
 # Classical position of spin 
 S_init = np.zeros([N,3])
@@ -158,6 +162,14 @@ for bb in range(0,batches):
 
     Parallel(n_jobs=num_cores)(delayed(methods.dtwa_sc)(S_init, bb, ss, samples, timevec, N, Jx_mat, Jy_mat, Jz_mat, hX_mat, hY_mat, hZ_mat, temp_save_loc, rtol, atol) for ss in range(0,samples)) 
 
+    if bb == batches - 1:
+        os.remove(Jx_path)
+        os.remove(Jy_path)
+        os.remove(Jz_path)
+        os.remove(hX_path)
+        os.remove(hY_path)
+        os.remove(hZ_path)
+
     # initialize matrices 
     Sx_av =  np.zeros(timesteps+1)
     Sy_av =  np.zeros(timesteps+1)
@@ -174,7 +186,7 @@ for bb in range(0,batches):
         sx_sample = np.load(temp_save_loc + "Sx_sample_" + str(ss) + ".npy")
         sy_sample = np.load(temp_save_loc + "Sy_sample_" + str(ss) + ".npy")
         sz_sample = np.load(temp_save_loc + "Sz_sample_" + str(ss) + ".npy")
-        
+
         Sx_sum_t = np.sum(sx_sample,0)    
         Sy_sum_t = np.sum(sy_sample,0)    
         Sz_sum_t = np.sum(sz_sample,0)   
@@ -190,6 +202,12 @@ for bb in range(0,batches):
         CorrYZ_av += 1.0 / samples * Sy_sum_t * Sz_sum_t
 
         del sx_sample, sy_sample, sz_sample
+        
+        if bb == batches - 1:
+            os.remove(temp_save_loc + "Sx_sample_" + str(ss) + ".npy")
+            os.remove(temp_save_loc + "Sy_sample_" + str(ss) + ".npy")
+            os.remove(temp_save_loc + "Sz_sample_" + str(ss) + ".npy")
+
 
     # Calculate the running mean and variance for magnetization and correlators
     nSx, Sx_mean, Sx_std, Sx_M2 = methods.update_stats(Sx_av, nSx, Sx_mean, Sx_M2) 
